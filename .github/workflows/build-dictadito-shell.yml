@@ -31,6 +31,14 @@ jobs:
           mkdir -p dictadito-builder
           cat dictadito-builder.part-{1,2,3,4,5}.b64 | base64 -d > dictadito-builder.tar.gz
           tar -xzf dictadito-builder.tar.gz -C dictadito-builder
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('dictadito-builder/app/build.gradle')
+          text = path.read_text()
+          if 'buildFeatures {' not in text:
+              text = text.replace('    compileOptions {', '    buildFeatures {\n        buildConfig true\n    }\n\n    compileOptions {')
+              path.write_text(text)
+          PY
 
       - name: Generate Gradle wrapper
         working-directory: dictadito-builder
