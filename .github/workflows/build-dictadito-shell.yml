@@ -1,0 +1,57 @@
+name: Build Dictadito Android shell
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle 8.7
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      - name: Restore generic Android shell source
+        run: |
+          mkdir -p dictadito-builder
+          base64 -d dictadito-builder.tar.gz.b64 > dictadito-builder.tar.gz
+          tar -xzf dictadito-builder.tar.gz -C dictadito-builder
+
+      - name: Generate Gradle wrapper
+        working-directory: dictadito-builder
+        run: gradle wrapper --gradle-version 8.7
+
+      - name: Compile debug APK
+        working-directory: dictadito-builder
+        run: ./gradlew :app:assembleDebug --stacktrace
+
+      - name: Verify APK
+        run: test -s dictadito-builder/app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Upload APK and wrapper
+        uses: actions/upload-artifact@v4
+        with:
+          name: dictadito-android-shell
+          path: |
+            dictadito-builder/app/build/outputs/apk/debug/app-debug.apk
+            dictadito-builder/gradlew
+            dictadito-builder/gradlew.bat
+            dictadito-builder/gradle/wrapper/gradle-wrapper.jar
+            dictadito-builder/gradle/wrapper/gradle-wrapper.properties
+          if-no-files-found: error
+          retention-days: 3
