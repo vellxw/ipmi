@@ -44,19 +44,22 @@ jobs:
         working-directory: dictadito-builder
         run: gradle wrapper --gradle-version 8.7
 
-      - name: Compile debug APK
+      - name: Compile debug and unsigned release APKs
         working-directory: dictadito-builder
-        run: ./gradlew :app:assembleDebug --stacktrace
+        run: ./gradlew :app:assembleDebug :app:assembleRelease --stacktrace
 
-      - name: Verify APK
-        run: test -s dictadito-builder/app/build/outputs/apk/debug/app-debug.apk
+      - name: Verify APK outputs
+        run: |
+          test -s dictadito-builder/app/build/outputs/apk/debug/app-debug.apk
+          test -s dictadito-builder/app/build/outputs/apk/release/app-release-unsigned.apk
 
-      - name: Upload APK and wrapper
+      - name: Upload APKs and wrapper
         uses: actions/upload-artifact@v4
         with:
           name: dictadito-android-shell
           path: |
             dictadito-builder/app/build/outputs/apk/debug/app-debug.apk
+            dictadito-builder/app/build/outputs/apk/release/app-release-unsigned.apk
             dictadito-builder/gradlew
             dictadito-builder/gradlew.bat
             dictadito-builder/gradle/wrapper/gradle-wrapper.jar
