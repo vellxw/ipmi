@@ -29,7 +29,7 @@ jobs:
       - name: Restore generic Android shell source
         run: |
           mkdir -p dictadito-builder
-          base64 -d dictadito-builder.tar.gz.b64 > dictadito-builder.tar.gz
+          cat dictadito-builder.part-{1,2,3,4,5}.b64 | base64 -d > dictadito-builder.tar.gz
           tar -xzf dictadito-builder.tar.gz -C dictadito-builder
 
       - name: Generate Gradle wrapper
